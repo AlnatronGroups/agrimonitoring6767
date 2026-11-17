@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AquaSense Water Dashboard</title><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#071522;--panel:#102a40;--line:#25465a;--cyan:#42d9e8;--green:#53e0b0;--muted:#9ab3c2;--white:#effaff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#17445b,transparent 35%),#071522;color:var(--white);font-family:Segoe UI,Arial,sans-serif}.wrap{max-width:1400px;margin:auto;padding:25px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.brand{display:flex;gap:13px;align-items:center}.logo{font-size:27px;background:linear-gradient(135deg,#42d9e8,#398cff);padding:12px;border-radius:15px}.brand h1{margin:0;font-size:23px}.brand small,.muted{color:var(--muted)}.live{color:#7bf0c2;background:#123c35;border:1px solid #287e68;border-radius:30px;padding:9px 13px;font-size:12px}.panel{background:linear-gradient(145deg,#14364e,#0d2539);border:1px solid var(--line);border-radius:21px;box-shadow:0 15px 40px #0003}.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:17px}.tankpanel{padding:22px;display:flex;align-items:center;justify-content:space-between;min-height:290px;overflow:hidden}.eyebrow{color:var(--cyan);font-size:11px;letter-spacing:2px;font-weight:bold}.tankpanel h2{font-size:27px;margin:12px 0}.tankpanel p{color:var(--muted);max-width:390px;line-height:1.6;font-size:13px}.tankart{position:relative;width:165px;height:220px;margin:0 28px}.tank{position:absolute;bottom:0;left:8px;width:135px;height:195px;border:5px solid #a6e7f6;border-radius:22px 22px 28px 28px;overflow:hidden;background:#ffffff08;box-shadow:inset 0 0 22px #4ad9ed33}.water{position:absolute;bottom:0;height:58%;width:100%;background:linear-gradient(#42d9e8aa,#168bd9);}.water:before{content:"";position:absolute;top:-8px;left:-15%;width:130%;height:18px;border-radius:50%;background:#b1f8ff99;animation:wave 4s infinite ease-in-out}@keyframes wave{50%{transform:translateX(12px) rotate(2deg)}}.tanklabel{position:absolute;top:54%;width:100%;text-align:center;font-weight:bold;font-size:18px;text-shadow:0 2px 5px #034}.pipe{position:absolute;right:-8px;top:75px;width:27px;height:60px;border:5px solid #a6e7f6;border-left:0;border-radius:0 12px 12px 0}.relaypanel{padding:22px}.relaypanel h3{margin:0 0 5px}.relay{display:flex;justify-content:space-between;align-items:center;background:#0a2031;border:1px solid var(--line);border-radius:14px;padding:15px;margin-top:12px}.relay b{font-size:14px}.relay small{display:block;color:var(--muted);margin-top:5px}.state{padding:7px 12px;border-radius:20px;background:#293d4b;color:#aec0cb;font-size:11px;font-weight:bold}.state.on{background:#123f35;color:#70f0bd;border:1px solid #287e68}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:17px 0}.metric{padding:18px;min-height:135px}.metrichead{font-size:11px;color:var(--muted);letter-spacing:1px}.value{font-size:28px;font-weight:800;margin-top:17px}.unit{font-size:12px;color:var(--muted);font-weight:normal}.lower{display:grid;grid-template-columns:1.4fr 1fr;gap:17px}.chart,.quality{padding:20px;min-height:300px}.chartarea{height:230px}.qualityrow{margin:20px 0}.qtop{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}.bar{height:8px;background:#284253;border-radius:10px;overflow:hidden}.bar span{display:block;height:100%;background:linear-gradient(90deg,#42d9e8,#53e0b0);width:0}.foot{font-size:11px;color:var(--muted);margin-top:17px}.refresh{background:#153a52;color:white;border:1px solid #2d586d;padding:9px 13px;border-radius:10px;cursor:pointer;margin-left:8px}
+@media(max-width:850px){.hero,.lower{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.wrap{padding:13px}.tankart{transform:scale(.8);transform-origin:right center;margin:0;width:125px}.tankpanel{padding:15px}.tankpanel h2{font-size:21px}.grid{gap:9px}.metric{padding:13px}.value{font-size:23px}}
+</style></head><body><main class="wrap">
+<header class="top"><div class="brand"><div class="logo">💧</div><div><h1>AquaSense</h1><small>SMART WATER QUALITY MONITOR</small></div></div><div><span class="live" id="connection">● CONNECTING</span><button class="refresh" onclick="loadData()">↻ Refresh</button></div></header>
+<section class="hero">
+<div class="panel tankpanel"><div><div class="eyebrow">WATER SYSTEM OVERVIEW</div><h2>Water quality at a glance</h2><p>Live sensor readings and pH-based automatic relay indicators from your ESP32-S3 water monitoring system.</p><div style="display:flex;gap:25px;margin-top:22px"><div><b id="tankPH">--</b><br><small class="muted">Current pH</small></div><div><b id="tankEC">--</b><br><small class="muted">EC · µS/cm</small></div></div></div><div class="tankart"><div class="tank"><div class="water"></div><div class="tanklabel">AQUA</div></div><div class="pipe"></div></div></div>
+<div class="panel relaypanel"><h3>System controls</h3><small class="muted">Automatic status based on latest pH reading</small>
+<div class="relay"><div><b>pH Motor</b><small>GPIO 10 · pH above 7</small></div><span class="state" id="relay10">OFF</span></div>
+<div class="relay"><div><b>Water Motor</b><small>GPIO 11 · pH below 5</small></div><span class="state" id="relay11">OFF</span></div>
+<p class="foot" id="relayNote">Waiting for valid pH reading.</p></div></section>
+<section class="grid">
+<div class="panel metric"><div class="metrichead">pH LEVEL</div><div class="value" id="ph">-- <span class="unit">pH</span></div><small class="muted" id="phStatus">Waiting for reading</small></div>
+<div class="panel metric"><div class="metrichead">CONDUCTIVITY</div><div class="value" id="ec">-- <span class="unit">µS/cm</span></div><small class="muted">Electrical conductivity</small></div>
+<div class="panel metric"><div class="metrichead">TEMPERATURE</div><div class="value" id="temp">-- <span class="unit">°C</span></div><small class="muted">DHT11 air temperature</small></div>
+<div class="panel metric"><div class="metrichead">HUMIDITY</div><div class="value" id="humidity">-- <span class="unit">%</span></div><small class="muted">Ambient humidity</small></div>
+<div class="panel metric"><div class="metrichead">UV SENSOR</div><div class="value" id="uv">--</div><small class="muted">LTR390 raw reading</small></div></section>
+<section class="lower"><div class="panel chart"><h3>Recent sensor trends</h3><div class="chartarea"><canvas id="trend"></canvas></div></div>
+<div class="panel quality"><h3>Reading indicators</h3>
+<div class="qualityrow"><div class="qtop"><span>pH scale position</span><b id="phRange">--</b></div><div class="bar"><span id="phBar"></span></div></div>
+<div class="qualityrow"><div class="qtop"><span>EC reading</span><b id="ecRange">--</b></div><div class="bar"><span id="ecBar"></span></div></div>
+<div class="qualityrow"><div class="qtop"><span>Temperature</span><b id="tempRange">--</b></div><div class="bar"><span id="tempBar"></span></div></div>
+<p class="foot">Display scales only; these indicators do not certify water potability. Tank illustration is decorative and does not measure water level.</p></div></section>
+<footer class="foot" style="display:flex;justify-content:space-between;flex-wrap:wrap"><span>ESP32-S3 · pH · EC · DHT11 · LTR390</span><span id="updated">ThingSpeak channel 558170 · Waiting for data</span></footer>
+</main>
+<script>
+const CHANNEL_ID="558170";
+// Keep blank for a public ThingSpeak channel.
+// For a private channel, enter its READ API KEY.
+const READ_API_KEY="";
+const REFRESH_MS=20000;
+let chart;
+function metric(id,v,u=""){document.getElementById(id).innerHTML=(v===null?"--":v)+(u?` <span class="unit">${u}</span>`:"")}
+function value(v){let n=Number(v);return v===null||v===""||!Number.isFinite(n)?null:n}
+function relay(id,on){let e=document.getElementById(id);e.textContent=on?"ON":"OFF";e.className="state "+(on?"on":"")}
+function initChart(){chart=new Chart(document.getElementById("trend"),{type:"line",data:{labels:[],datasets:[{label:"pH",data:[],borderColor:"#42d9e8",backgroundColor:"#42d9e822",fill:true,tension:.35,yAxisID:"y"},{label:"EC µS/cm",data:[],borderColor:"#53e0b0",tension:.35,yAxisID:"y1"}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{labels:{color:"#d8edf6"}}},scales:{x:{ticks:{color:"#9ab3c2",maxTicksLimit:7},grid:{color:"#ffffff0d"}},y:{ticks:{color:"#42d9e8"},grid:{color:"#ffffff0d"}},y1:{position:"right",ticks:{color:"#53e0b0"},grid:{drawOnChartArea:false}}}}})}
+async function loadData(){let status=document.getElementById("connection");status.textContent="● CONNECTING";try{
+let url=`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=20${READ_API_KEY?"&api_key="+encodeURIComponent(READ_API_KEY):""}`;
+let r=await fetch(url,{cache:"no-store"});if(!r.ok)throw Error("ThingSpeak HTTP "+r.status);let j=await r.json();if(!j.feeds?.length)throw Error("No feed data. Check channel visibility or Read API Key.");
+let feeds=j.feeds,latest=[...feeds].reverse().find(f=>f.field1!==null||f.field2!==null);if(!latest)throw Error("No pH/EC data in fields 1 and 2.");
+let ph=value(latest.field1),ec=value(latest.field2),t=value(latest.field3),h=value(latest.field5),uv=value(latest.field4);
+metric("ph",ph===null?null:ph.toFixed(2),"pH");metric("ec",ec===null?null:Math.round(ec),"µS/cm");metric("temp",t===null?null:t.toFixed(1),"°C");metric("humidity",h===null?null:h.toFixed(1),"%");metric("uv",uv===null?null:Math.round(uv));
+document.getElementById("tankPH").textContent=ph===null?"--":ph.toFixed(2);document.getElementById("tankEC").textContent=ec===null?"--":Math.round(ec);
+document.getElementById("phStatus").textContent=ph===null?"No pH value":ph<5?"Below 5.00":ph>7?"Above 7.00":"Between 5.00 and 7.00";
+let high=ph!==null&&ph>7,low=ph!==null&&ph>=0&&ph<5;relay("relay10",high);relay("relay11",low);
+document.getElementById("relayNote").textContent=ph===null?"No valid pH reading — indicators shown OFF.":high?"pH is above 7. The pH Motor indicator is ON.":low?"pH is below 5. The Water Motor indicator is ON.":"pH is between 5 and 7. Both indicators are OFF.";
+let bars=[["phBar",ph,14],["ecBar",ec,3000],["tempBar",t,50]];bars.forEach(([id,v,max])=>document.getElementById(id).style.width=(v===null?0:Math.max(0,Math.min(100,v/max*100)))+"%");
+document.getElementById("phRange").textContent=ph===null?"--":ph.toFixed(2);document.getElementById("ecRange").textContent=ec===null?"--":Math.round(ec)+" µS/cm";document.getElementById("tempRange").textContent=t===null?"--":t.toFixed(1)+" °C";
+let valid=feeds.filter(f=>value(f.field1)!==null||value(f.field2)!==null);chart.data.labels=valid.map(f=>new Date(f.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));chart.data.datasets[0].data=valid.map(f=>value(f.field1));chart.data.datasets[1].data=valid.map(f=>value(f.field2));chart.update();
+status.textContent="● LIVE DATA";document.getElementById("updated").textContent="Last update "+new Date().toLocaleTimeString()+" · Channel "+CHANNEL_ID;
+}catch(e){status.textContent="● DATA UNAVAILABLE";document.getElementById("updated").textContent=e.message;console.error(e)}}
+initChart();loadData();setInterval(loadData,REFRESH_MS);
+</script></body></html>
